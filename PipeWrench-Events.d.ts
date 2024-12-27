@@ -47,6 +47,10 @@ declare module '@asledgehammer/pipewrench-events' {
         ObjectTooltip,
         java,
     } from '@asledgehammer/pipewrench';
+    import type { ArrayList, ContainerID, IsoAnimal, IsoCompost, IsoLivingCharacter, IsoTrap, TermsOfServiceState } from '@asledgehammer/pipewrench';
+    import type { ISContextMenu, ISPlayerDataObject } from '@asledgehammer/pipewrench/client';
+    import type { ISBuildingObject } from '@asledgehammer/pipewrench/server';
+
     type KahluaTable = se.krka.kahlua.vm.KahluaTable;
     /**
      * EventEmitter is for both vanilla ProjectZomboid event handling and custom events written for PipeWrench.
@@ -193,7 +197,6 @@ declare module '@asledgehammer/pipewrench-events' {
     export const onPressRackButton: EventEmitter<OnPressRackButtonListener>;
     export const onPreUIDraw: EventEmitter<OnPreUIDrawListener>;
     export const onRainStop: EventEmitter<OnRainStopListener>;
-    export const onReceiveGlobalModData: EventEmitter<OnReceiveGlobalModDataListener>;
     export const onReceiveItemListNet: EventEmitter<OnReceiveItemListNetListener>;
     export const onReceiveUserlog: EventEmitter<OnReceiveUserlogListener>;
     export const onRefreshInventoryWindowContainers: EventEmitter<OnRefreshInventoryWindowContainersListener>;
@@ -261,13 +264,48 @@ declare module '@asledgehammer/pipewrench-events' {
     export const receiveSafehouseInvite: EventEmitter<ReceiveSafehouseInviteListener>;
     export const requestTrade: EventEmitter<RequestTradeListener>;
     export const reuseGridSquare: EventEmitter<ReuseGridSquareListener>;
-    export const sendCustomModData: EventEmitter<SendCustomModDataListener>;
     export const serverPinged: EventEmitter<ServerPingedListener>;
     export const switchChatStream: EventEmitter<SwitchChatStreamListener>;
     export const syncFaction: EventEmitter<SyncFactionListener>;
     export const tradingUIAddItem: EventEmitter<TradingUIAddItemListener>;
     export const tradingUIRemoveItem: EventEmitter<TradingUIRemoveItemListener>;
     export const tradingUIUpdateState: EventEmitter<TradingUIUpdateStateListener>;
+    
+    // b42 unstable remove events
+    // export const onReceiveGlobalModData: EventEmitter<OnReceiveGlobalModDataListener>;
+    // export const sendCustomModData: EventEmitter<SendCustomModDataListener>;
+
+    // b42 unstable new events
+    export const onSourceWindowFileReload: EventEmitter<OnSourceWindowFileReloadListener>;
+    export const onPreFillInventoryContextMenuNoItems: EventEmitter<OnPreFillInventoryContextMenuNoItemsListener>;
+    export const onFillInventoryContextMenuNoItems: EventEmitter<OnFillInventoryContextMenuNoItemsListener>;
+    export const onClickedAnimalForContext: EventEmitter<OnClickedAnimalForContextListener>;
+    export const preAddSkillDefs: EventEmitter<preAddSkillDefsListener>;
+    export const onZombieCreate: EventEmitter<OnZombieCreateListener>;
+    export const grappleGrabCollisionCheck: EventEmitter<GrappleGrabCollisionCheckListener>;
+    export const grapplerLetGo: EventEmitter<GrapplerLetGoListener>;
+    export const onPlayerGetDamage: EventEmitter<OnPlayerGetDamageListener>;
+    export const onContextKey: EventEmitter<OnContextKeyListener>;
+    export const onPressWalkTo: EventEmitter<OnPressWalkToListener>;
+    export const onAlertMessage: EventEmitter<OnAlertMessageListener>;
+    export const onProcessAction: EventEmitter<OnProcessActionListener>;
+    export const onProcessTransaction: EventEmitter<OnProcessTransactionListener>;
+    export const onSleepingTick: EventEmitter<OnSleepingTickListener>;
+    export const onGameStateEnter: EventEmitter<OnGameStateEnterListener>;
+    export const setDragItem: EventEmitter<SetDragItemListener>;
+    export const loadChunk: EventEmitter<LoadChunkListener>;
+    export const onLoadedMapZones: EventEmitter<OnLoadedMapZonesListener>;
+    export const renderOpaqueObjectsInWorld: EventEmitter<RenderOpaqueObjectsInWorldListener>;
+    export const onWeaponHitThumpable: EventEmitter<OnWeaponHitThumpableListener>;
+    export const onDeadBodySpawn: EventEmitter<OnDeadBodySpawnListener>;
+    export const onThrowableExplode: EventEmitter<OnThrowableExplodeListener>;
+    export const onItemFound: EventEmitter<OnItemFoundListener>;
+    export const onAnimalTracks: EventEmitter<OnAnimalTracksListener>;
+    export const onTemplateTextInit: EventEmitter<OnTemplateTextInitListener>;
+    export const onMouseWheel: EventEmitter<OnMouseWheelListener>;
+    export const onSpawnVehicleStart: EventEmitter<OnSpawnVehicleStartListener>;
+    export const onSpawnVehicleEnd: EventEmitter<OnSpawnVehicleEndListener>;
+
     /**
      * Triggered when a faction invite has been accepted.
      *
@@ -1142,13 +1180,6 @@ declare module '@asledgehammer/pipewrench-events' {
      */
     export type OnRainStopListener = () => void;
     /**
-     * Triggered when the game client is receiving GlobalModData from the server.
-     *
-     * @param key The key for the ModData that has been received.
-     * @param modData The ModData that has been received.
-     */
-    export type OnReceiveGlobalModDataListener = (key: string, modData: KahluaTable) => void;
-    /**
      * Triggered when a player is receiving a list of items from another player.
      *
      * @param sender The player who's sending the item list.
@@ -1631,10 +1662,6 @@ declare module '@asledgehammer/pipewrench-events' {
      */
     export type ReuseGridSquareListener = (square: IsoGridSquare) => void;
     /**
-     * Triggered when the game server is sending custom ModData to the client.
-     */
-    export type SendCustomModDataListener = () => void;
-    /**
      * Triggered when the game client receives the response after intiating a ping to a server.
      *
      * @param ipAddress The IP address of the user who pinged the server.
@@ -1678,4 +1705,157 @@ declare module '@asledgehammer/pipewrench-events' {
      * @param tickets The buffer where to write the tickets.
      */
     export type ViewTicketsListener = (tickets: ByteBufferWriter) => void;
+    
+    // b42 unstable remove event types
+    // /**
+    //  * Triggered when the game client is receiving GlobalModData from the server.
+    //  *
+    //  * @param key The key for the ModData that has been received.
+    //  * @param modData The ModData that has been received.
+    //  */
+    // export type OnReceiveGlobalModDataListener = (key: string, modData: KahluaTable) => void;
+    // /**
+    //  * Triggered when the game server is sending custom ModData to the client.
+    //  */
+    // export type SendCustomModDataListener = () => void;
+
+    // b42 unstable new event types
+    export type OnSourceWindowFileReloadListener = () => void;
+    export type OnPreFillInventoryContextMenuNoItemsListener = (
+        playerNum: number,
+        context: ISContextMenu,
+        isLoot: boolean,
+    ) => void;
+    export type OnFillInventoryContextMenuNoItemsListener = (
+        playerNum: number,
+        context: ISContextMenu,
+        isLoot: boolean,
+    ) => void;
+    export type OnClickedAnimalForContextListener = (
+        player: number,
+        context: ISContextMenu,
+        clickedAnimals: IsoAnimal[],
+        test?: boolean,
+    ) => void;
+    export type preAddSkillDefsListener = (
+        /**
+         * because this lua class not extends ISBaseObject,
+         * so can not found it and can not generate lua def for it
+         * 
+         * file location: `shared/Foraging/forageSystem.lua`
+         */
+        forageSystem: any,
+    ) => void;
+    export type OnZombieCreateListener = (
+        zombie: IsoZombie,
+    ) => void;
+    export type GrappleGrabCollisionCheckListener = (
+        character: IsoGameCharacter,
+        handWeapon: HandWeapon,
+    ) => void;
+    export type GrapplerLetGoListener = (
+        character: IsoGameCharacter,
+        grappleResult: string,
+    ) => void;
+    export type OnPlayerGetDamageListener = (
+        character: IsoGameCharacter,
+        source: string,
+        value: number,
+    ) => void;
+    export type OnContextKeyListener = (
+        playerObj: IsoPlayer,
+        timePressedContext: number,
+    ) => void;
+    /** 
+     * There seems to be some issues with the parameters of this event
+     * Temporarily use `any` instead
+     */
+    export type OnPressWalkToListener = (
+        arg1: any, 
+        arg2: any, 
+        arg3: any,
+    ) => void;
+    export type OnAlertMessageListener = (
+        message: ChatMessage,
+        tabID: number,
+    ) => void;
+    export type OnProcessActionListener = (
+        action: string,
+        character: IsoPlayer,
+        args: {
+            x: number
+            y: number
+            z: number
+            north: boolean
+            spriteName: string
+            item?: ISBuildingObject
+        } & Record<string, any>,
+    ) => void;
+    export type OnProcessTransactionListener = (
+        action: string,
+        character: IsoPlayer,
+        item: InventoryItem | undefined,
+        source: ContainerID,
+        destination: ContainerID,
+        args?: {
+            direction?: string
+            square?: IsoGridSquare
+        } & Record<string, any>,
+    ) => void;
+    export type OnSleepingTickListener = (
+        playerIndex: number,
+        hourOfDay: number,
+    ) => void;
+    export type OnGameStateEnterListener = (
+        javaStateObj: TermsOfServiceState,
+    ) => void;
+    export type SetDragItemListener = (
+        item: object | undefined,
+        playerNum: number,
+    ) => void;
+    export type LoadChunkListener = (
+        chunk: IsoChunk,
+    ) => void;
+    export type OnLoadedMapZonesListener = () => void;
+    export type RenderOpaqueObjectsInWorldListener = (
+        playerIndex: number,
+        x: number,
+        y: number,
+        z: number,
+        square: IsoGridSquare,
+    ) => void;
+    export type OnWeaponHitThumpableListener = (
+        character: IsoGameCharacter,
+        handWeapon: HandWeapon,
+        compost: IsoCompost,
+    ) => void;
+    export type OnDeadBodySpawnListener = (
+        body: IsoDeadBody,
+    ) => void;
+    export type OnThrowableExplodeListener = (
+        trap: IsoTrap,
+        square: IsoGridSquare,
+    ) => void;
+    export type OnItemFoundListener = (
+        _character: IsoPlayer,
+        _itemType: string,
+        /** override amount of xp by a percent (float 0-1) */
+        _amount?: number,
+    ) => void;
+    export type OnAnimalTracksListener = (
+        chr: IsoPlayer,
+        /** The actual type is `ArrayList<AnimalTracks>` */
+        tracks: ArrayList,
+    ) => void;
+    export type OnTemplateTextInitListener = () => void;
+    /** maybe deprecated? */
+    export type OnMouseWheelListener = (
+        delta: number,
+    ) => void;
+    export type OnSpawnVehicleStartListener = (
+        vehicle: BaseVehicle,
+    ) => void;
+    export type OnSpawnVehicleEndListener = (
+        vehicle: BaseVehicle,
+    ) => void;
 }
